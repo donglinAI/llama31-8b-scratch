@@ -1,0 +1,27 @@
+# ============================================================
+# 评测 smoke 配置：CPU、合成数据、秒级跑完，不依赖任何外部模型/数据集
+# 用途：验证评测代码路径（PPL/多选/生成式聚合）能跑通
+# ============================================================
+seed: 42
+
+# 评测类型：ppl / multiple_choice / generation / lm_eval
+mode: "ppl"
+
+# 手写评测参数（合成数据）
+smoke:
+  vocab_size: 16
+  seq_len: 32
+  num_batches: 4
+  mc_choices: 4
+  mc_examples: 20
+
+# lm-eval 工业封装（smoke 模式下用 limit 截一小段，需要 lm_eval 已安装）
+lm_eval:
+  model_path: null            # null 表示跳过 lm_eval，只跑手写分支
+  tasks: ["mmlu", "ceval"]
+  batch_size: 2
+  limit: 5                    # 每个任务只跑 5 条，仅 smoke
+  device: "cpu"
+  dtype: "float32"
+  num_fewshot: null
+  output_path: "outputs/eval_smoke"

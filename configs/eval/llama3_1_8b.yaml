@@ -1,0 +1,31 @@
+# ============================================================
+# 8B 真机评测配置：GPU（单卡 5090 / A100），跑 lm-eval-harness 标准任务
+# 注意：本配置不预填任何分数，真实数字跑完后再写入 outputs/
+# ============================================================
+seed: 42
+
+mode: "lm_eval"
+
+lm_eval:
+  model_path: "outputs/llama3_1_8b_pretrained"   # 替换为你的 HF 模型目录
+  tasks:
+    - "mmlu"
+    - "cmmlu"
+    - "ceval"
+    - "gpqa_diamond"
+    - "hellaswag"
+    - "arc_challenge"
+  model: "hf"                 # 显存够时换 "vllm" 可加速 5~10x
+  dtype: "bfloat16"
+  device: "cuda"
+  batch_size: 16              # vLLM 模式可写 "auto"
+  num_fewshot: null           # 用每个任务的默认 few-shot；MMLU 默认 5-shot
+  limit: null                 # 真机必须为 null
+  output_path: "outputs/eval_8b"
+  trust_remote_code: false
+
+# 手写困惑度补充评测（在自己的语料上跑）
+ppl:
+  eval_file: "data/toy/valid.jsonl"   # 替换为你的验证集
+  max_length: 2048
+  stride: 512
