@@ -1,0 +1,30 @@
+# ============================================================
+# ORPO CPU 冒烟配置：单模型同时做 SFT 与赔率比对齐，无需参考模型
+# 论文：Hong & Lee, 2024, ORPO: Monolithic Preference Optimization
+# 默认硬件假设：单卡 CPU，batch_size=2，短序列
+# ============================================================
+_base_: ../model/smoke.yaml
+
+seed: 42
+
+data:
+  train_path: data/toy/align/orpo_train.jsonl  # schema: prompt/chosen/rejected
+  eval_path: null
+
+align:
+  method: orpo
+  beta: 0.1                  # 赔率比温度 β
+  lambda_or: 0.1             # OR 损失权重 λ_OR
+  max_length: 64
+  max_prompt_length: 32
+
+trainer:
+  output_dir: outputs/align/orpo_smoke
+  learning_rate: 5.0e-6
+  batch_size: 2
+  max_steps: 5
+  num_train_epochs: 1
+  gradient_accumulation_steps: 1
+  logging_steps: 1
+  save_steps: 5
+  weight_decay: 0.0

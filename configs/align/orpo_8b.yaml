@@ -1,0 +1,32 @@
+# ============================================================
+# ORPO 8B 真机配置：单模型 SFT + 赔率比偏好优化，无参考模型显存开销
+# 论文：Hong & Lee, 2024, ORPO: Monolithic Preference Optimization
+# 默认硬件假设：单节点 8×A100/H100，bf16，梯度检查点开启
+# ============================================================
+_base_: ../model/llama3.1_8b.yaml
+
+seed: 42
+
+data:
+  train_path: data/align/orpo_train.jsonl
+  eval_path: data/align/orpo_eval.jsonl
+
+align:
+  method: orpo
+  beta: 0.1
+  lambda_or: 0.1
+  max_length: 4096
+  max_prompt_length: 2048
+
+trainer:
+  output_dir: outputs/align/orpo_8b
+  learning_rate: 5.0e-7
+  batch_size: 4
+  max_steps: -1
+  num_train_epochs: 1
+  gradient_accumulation_steps: 8
+  logging_steps: 10
+  save_steps: 500
+  weight_decay: 0.0
+  bf16: true
+  gradient_checkpointing: true
