@@ -1,0 +1,14 @@
+# ============================================================
+# SGLang 工业推理服务配置（RadixAttention + 结构化输出）
+# 硬件假设：单卡/多卡 GPU
+# 由 sglang_serve.build_serve_kwargs 读取（顶层 sglang 节点）
+# ============================================================
+
+sglang:
+  model_path: "outputs/llama3_1_8b_pretrained"
+  host: "0.0.0.0"
+  port: 8001
+  dtype: "auto"
+  mem_fraction_static: 0.85     # 静态 KV/权重可用显存比例
+  max_total_tokens: 8192         # 并发可容纳的总 token 数
+  enable_radix_cache: true       # 基数树前缀复用

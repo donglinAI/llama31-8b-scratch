@@ -1,0 +1,20 @@
+# ============================================================
+# OpenAI 兼容 API 服务配置
+# 硬件假设：CPU smoke 可用；8B 真机建议单卡 5090/A100
+# 由 08_deploy/run_api.py 读取
+# ============================================================
+
+# 后端选择：scratch=手写模型直驱；vllm/sglang=工业引擎常驻服务（见各自 yaml）
+backend: "scratch"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+# 手写后端（backend=scratch）相关
+model:
+  model_name: "llama31-8b-scratch"          # 对外 /v1/models 暴露的 id
+  model_path: "outputs/llama3_1_8b_pretrained"  # HF 格式权重目录；smoke 时可留空走随机权重
+  device: "cuda"                   # CPU smoke 改 "cpu"
+  default_max_tokens: 256         # 请求未传 max_tokens 时的默认上限
+  dtype: "float16"

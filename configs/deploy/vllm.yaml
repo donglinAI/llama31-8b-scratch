@@ -1,0 +1,15 @@
+# ============================================================
+# vLLM 工业推理服务配置（PagedAttention + 连续批处理）
+# 硬件假设：单卡/多卡 GPU，显存 >= 模型权重*1.2
+# 由 vllm_serve.build_serve_kwargs 读取（顶层 vllm 节点）
+# ============================================================
+
+vllm:
+  model_path: "outputs/llama3_1_8b_pretrained"  # HF 格式目录（model_type=llama）
+  model_name: "llama31-8b-scratch"                       # 对外 served-model-name
+  host: "0.0.0.0"
+  port: 8000
+  dtype: "auto"                                  # auto/float16/bfloat16
+  gpu_memory_utilization: 0.90                  # 占用显存比例
+  max_model_len: 4096                            # 最大上下文
+  enable_prefix_caching: true                     # 共享系统提示前缀复用 KV

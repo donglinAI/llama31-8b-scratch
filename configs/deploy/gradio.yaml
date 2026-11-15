@@ -1,0 +1,14 @@
+# ============================================================
+# Gradio 网页 Demo 配置
+# 前置：先启动 API（08_deploy/run_api.py），网页通过 OpenAI 兼容接口访问
+# ============================================================
+
+gradio:
+  api_url: "http://127.0.0.1:8000"   # API 服务地址
+  model: "llama31-8b-scratch"
+  port: 7860
+  share: false                        # 是否生成 gradio 公享链接
+  defaults:
+    temperature: 0.7
+    max_tokens: 512
+    top_p: 0.9
