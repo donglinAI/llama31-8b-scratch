@@ -1,0 +1,24 @@
+# ============================================================
+# 量化 smoke 配置：CPU、合成张量，只验证手写数学 core
+# 不调用任何工业库（auto_gptq/autoawq/bnb/llama.cpp）
+# ============================================================
+seed: 42
+
+mode: "core"
+
+core:
+  tensor_shape: [256, 256]
+  num_bits_list: [8, 4]
+  symmetric: true
+
+# 工业量化分支在 smoke 下默认跳过（缺库时分支会给出清晰提示）
+gptq:
+  enabled: false
+awq:
+  enabled: false
+bnb:
+  enabled: false
+gguf:
+  enabled: false
+  llama_cpp_dir: null
+  quant_type: "Q4_K_M"

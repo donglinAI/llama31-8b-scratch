@@ -1,0 +1,46 @@
+# ============================================================
+# 8B 真机量化配置：GPU + llama.cpp 环境
+# 按子项开关选择量化路径，互不影响
+# ============================================================
+seed: 42
+
+mode: "gptq"     # gptq / awq / bnb / gguf / core
+
+# 手写数学（所有模式都会先跑一遍 sanity check）
+core:
+  tensor_shape: [4096, 4096]
+  num_bits_list: [8, 4]
+
+# GPTQ：离线权重量化，需要 auto_gptq
+gptq:
+  enabled: true
+  model_path: "outputs/llama3_1_8b_pretrained"
+  output_dir: "outputs/llama3_1_8b_gptq4"
+  calibration_file: "data/toy/calibration.jsonl"
+  bits: 4
+  group_size: 128
+  desc_act: true
+
+# AWQ：激活感知缩放，需要 autoawq
+awq:
+  enabled: false
+  model_path: "outputs/llama3_1_8b_pretrained"
+  output_dir: "outputs/llama3_1_8b_awq4"
+  calibration_file: "data/toy/calibration.jsonl"
+  bits: 4
+  group_size: 128
+
+# bnb：加载时动态 4bit NF4（用于 QLoRA 微调，不存盘）
+bnb:
+  enabled: false
+  model_path: "outputs/llama3_1_8b_pretrained"
+  mode: "4bit"
+  compute_dtype: "bfloat16"
+
+# GGUF：llama.cpp 转换，需要本地 llama.cpp 仓库
+gguf:
+  enabled: false
+  model_path: "outputs/llama3_1_8b_pretrained"
+  output_dir: "outputs/gguf"
+  llama_cpp_dir: "/opt/llama.cpp"
+  quant_type: "Q4_K_M"
