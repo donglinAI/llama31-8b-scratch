@@ -1,0 +1,32 @@
+# ============================================================
+# GRPO CPU 冒烟配置：组采样 + 组内相对优势，无价值网络
+# 论文：DeepSeekMath (2024)；DeepSeek-R1 (2025)
+# 默认硬件假设：单卡 CPU，每组 4 条短回答，仅验证优势标准化与策略损失
+# ============================================================
+_base_: ../model/smoke.yaml
+
+seed: 42
+
+data:
+  train_path: data/toy/align/grpo_train.jsonl  # schema: prompt/answer(规则奖励)
+  eval_path: null
+
+align:
+  method: grpo
+  group_size: 4              # 每个 prompt 采样回答数 G
+  clip_ratio: 0.2            # 策略裁剪 ε
+  kl_coef: 0.0               # 参考模型 KL 系数 β_KL，0 表示关闭
+  kl_estimator: naive
+  max_prompt_length: 32
+  max_completion_length: 32
+
+trainer:
+  output_dir: outputs/align/grpo_smoke
+  learning_rate: 1.0e-6
+  batch_size: 4              # 应能被 group_size 整除
+  max_steps: 5
+  num_train_epochs: 1
+  gradient_accumulation_steps: 1
+  logging_steps: 1
+  save_steps: 5
+  weight_decay: 0.0

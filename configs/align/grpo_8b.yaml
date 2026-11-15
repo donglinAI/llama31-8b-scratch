@@ -1,0 +1,34 @@
+# ============================================================
+# GRPO 8B 真机配置：组内相对优势 + 规则/奖励模型打分，无价值网络
+# 论文：DeepSeekMath, 2024；DeepSeek-R1, 2025
+# 默认硬件假设：单节点 8×A100/H100，bf16；可配合可验证奖励函数
+# ============================================================
+_base_: ../model/llama3.1_8b.yaml
+
+seed: 42
+
+data:
+  train_path: data/align/grpo_train.jsonl
+  eval_path: data/align/grpo_eval.jsonl
+
+align:
+  method: grpo
+  group_size: 8
+  clip_ratio: 0.2
+  kl_coef: 0.01
+  kl_estimator: k3
+  max_prompt_length: 2048
+  max_completion_length: 2048
+
+trainer:
+  output_dir: outputs/align/grpo_8b
+  learning_rate: 1.0e-6
+  batch_size: 8
+  max_steps: -1
+  num_train_epochs: 1
+  gradient_accumulation_steps: 8
+  logging_steps: 10
+  save_steps: 500
+  weight_decay: 0.0
+  bf16: true
+  gradient_checkpointing: true
