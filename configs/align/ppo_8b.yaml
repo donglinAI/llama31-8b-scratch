@@ -1,0 +1,40 @@
+# ============================================================
+# PPO（经典 RLHF）8B 真机配置：policy/ref/reward/value 四模型闭环
+# 论文：Schulman et al., 2017, Proximal Policy Optimization Algorithms
+# 默认硬件假设：单节点 8×A100/H100，bf16；奖励模型由 rm_8b 产物加载
+# ============================================================
+_base_: ../model/llama3.1_8b.yaml
+
+seed: 42
+
+data:
+  train_path: data/align/ppo_train.jsonl
+  eval_path: data/align/ppo_eval.jsonl
+
+align:
+  method: ppo
+  gamma: 0.99
+  lam: 0.95
+  clip_ratio: 0.2
+  value_clip_ratio: 0.2
+  value_coef: 0.5
+  kl_coef: 0.05
+  kl_estimator: k3
+  whiten_advantages: true
+  max_length: 4096
+  max_prompt_length: 2048
+  reward_model_path: outputs/align/rm_8b    # 已训练 RM 权重路径
+
+trainer:
+  output_dir: outputs/align/ppo_8b
+  learning_rate: 1.0e-6
+  batch_size: 4
+  mini_batch_size: 4
+  max_steps: -1
+  num_train_epochs: 1
+  gradient_accumulation_steps: 8
+  logging_steps: 10
+  save_steps: 500
+  weight_decay: 0.0
+  bf16: true
+  gradient_checkpointing: true

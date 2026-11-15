@@ -1,0 +1,37 @@
+# ============================================================
+# PPO（经典 RLHF）CPU 冒烟配置：极小 policy / ref / reward / value 模型
+# 论文：Schulman et al., 2017, Proximal Policy Optimization Algorithms
+# 默认硬件假设：单卡 CPU，batch_size=2，短序列，仅验证损失与 GAE 通路
+# ============================================================
+_base_: ../model/smoke.yaml
+
+seed: 42
+
+data:
+  train_path: data/toy/align/ppo_train.jsonl  # schema: prompt/chosen/rejected
+  eval_path: null
+
+align:
+  method: ppo
+  gamma: 0.99                # 折扣因子 γ
+  lam: 0.95                  # GAE 衰减 λ
+  clip_ratio: 0.2            # 策略裁剪 ε
+  value_clip_ratio: 0.2      # 价值裁剪 ε_v
+  value_coef: 0.5            # 价值损失权重 c_v
+  kl_coef: 0.05              # 参考模型 KL 惩罚系数 β_KL
+  kl_estimator: naive        # naive(k1) / k3
+  whiten_advantages: true     # 优势批内白化
+  max_length: 64
+  max_prompt_length: 32
+
+trainer:
+  output_dir: outputs/align/ppo_smoke
+  learning_rate: 1.0e-6
+  batch_size: 2
+  mini_batch_size: 2
+  max_steps: 5
+  num_train_epochs: 1
+  gradient_accumulation_steps: 1
+  logging_steps: 1
+  save_steps: 5
+  weight_decay: 0.0
