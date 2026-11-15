@@ -1,0 +1,10 @@
+{"prompt": [{"role": "user", "content": "计算 17 加 25 的结果。"}], "answer": "42"}
+{"prompt": [{"role": "user", "content": "计算 6 乘以 8 的结果。"}], "answer": "48"}
+{"prompt": [{"role": "user", "content": "100 减去 37 等于多少？"}], "answer": "63"}
+{"prompt": [{"role": "user", "content": "一个长方形长 6 米、宽 4 米，面积是多少平方米？"}], "answer": "24"}
+{"prompt": [{"role": "user", "content": "中国的首都是哪座城市？"}], "answer": "北京"}
+{"prompt": [{"role": "user", "content": "水的化学式是什么？"}], "answer": "H2O"}
+{"prompt": [{"role": "user", "content": "一年有多少个月份？"}], "answer": "12"}
+{"prompt": [{"role": "user", "content": "计算 9 加 6 加 5 的结果。"}], "answer": "20"}
+{"prompt": [{"role": "user", "content": "太阳从哪个方向升起？"}], "answer": "东方"}
+{"prompt": [{"role": "user", "content": "等边三角形有几条边长度相等？"}], "answer": "3"}
