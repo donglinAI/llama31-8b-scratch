@@ -1,0 +1,16 @@
+# ============================================================
+# PyTorch FSDP 配置（ZeRO-3 等价、PyTorch 原生）
+# 硬件假设：8×A100/H100；与 DeepSpeed 二选一
+# 与 ZeRO-3 的 tradeoff：FSDP 与 torch.compile / activation checkpointing
+# 配合更紧；ZeRO 生态更成熟、HF 集成最好。
+# ============================================================
+sharding_strategy: FULL_SHARD   # FULL_SHARD=ZeRO-3；SHARD_GRAD_OP=ZeRO-2；NO_SHARD=DDP
+mixed_precision:
+  param_dtype: bfloat16
+  reduce_dtype: bfloat16
+  buffer_dtype: bfloat16
+use_orig_params: true           # 保留原参数名，便于 LoRA / param groups
+forward_prefetch: true
+activation_checkpointing: true
+# CPU offload（显存极紧时再开，通信代价大）
+cpu_offload: false

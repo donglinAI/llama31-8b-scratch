@@ -1,0 +1,51 @@
+# ============================================================
+# 预训练 smoke 配置：CPU / 单卡可在 1~2 分钟跑通全链路
+# 硬件假设：任意笔记本 CPU 或单张消费级显卡；仅用于验证训练循环
+# ============================================================
+# 引用 model 子包的 smoke 结构（2 层、hidden=128、词表 512）
+_base_: ../../configs/model/smoke.yaml
+
+# 分词器：已在 configs/tokenizer/smoke.yaml 训练好，词表 512 与模型对齐
+tokenizer:
+  path: outputs/tokenizer/smoke
+
+# 数据（数据代理实现；smoke 用 data/toy 下的小文件，真实路径由入口解析）
+data:
+  train_file: data/toy/pretrain.jsonl
+  val_file: null
+  seq_len: 64
+  memmap: false
+
+# 训练超参（对应 TrainerConfig 字段）
+training:
+  output_dir: outputs/pretrain_smoke
+  seed: 42
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 2      # GLOBAL_BS = 2*2*1 = 4
+  max_steps: 50                        # 小样本快速过一遍
+  num_train_epochs: 1.0
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  adam_betas: [0.9, 0.95]
+  adam_eps: 1.0e-8
+  max_grad_norm: 1.0
+  optimizer_type: adamw               # CPU 不用 8bit
+  warmup_steps: 5
+  min_lr_ratio: 0.1
+  mixed_precision: no                 # CPU smoke 走 fp32
+  gradient_checkpointing: false
+  torch_compile: false
+  logging_steps: 10
+  save_steps: 25
+  eval_steps: 100000
+  save_total_limit: 2
+  report_to: none                     # smoke 不开 wandb/tb
+  project_name: llama31-8b-scratch-pretrain
+  run_name: smoke
+  dataloader_num_workers: 0
+
+# 可选：分布式路径（单卡留空；8B 真机再切 deepspeed/fsdp）
+distributed:
+  backend: null          # null / ddp / deepspeed / fsdp
+  deepspeed_config: null
+  fsdp_config: null

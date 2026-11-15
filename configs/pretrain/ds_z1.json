@@ -1,0 +1,17 @@
+{
+  "_comment": "DeepSpeed ZeRO Stage-1：只切优化器状态（m、v），不切梯度与权重。适合 1B~7B 单节点训练，通信量与 DDP 相同。",
+  "train_micro_batch_size_per_gpu": "auto",
+  "gradient_accumulation_steps": "auto",
+  "gradient_clipping": "auto",
+  "bf16": {
+    "enabled": true
+  },
+  "zero_optimization": {
+    "stage": 1,
+    "allgather_partitions": true,
+    "allgather_bucket_size": 2e8,
+    "reduce_scatter": true,
+    "reduce_bucket_size": 2e8,
+    "overlap_comm": true
+  }
+}

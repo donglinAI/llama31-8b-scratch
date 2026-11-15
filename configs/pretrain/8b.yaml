@@ -1,0 +1,43 @@
+# ============================================================
+# 预训练 8B 真机配置：8×A100/H100 80G，bf16，ZeRO-2
+# 硬件假设：8 张 80G 显卡；GLOBAL_BS 由 MBS*GAS*8 反推到约 0.5M tokens/step
+# ============================================================
+_base_: ../../configs/model/llama3.1_8b.yaml
+
+data:
+  train_file: data/toy/pretrain.jsonl     # 真机换成 memmap .bin 路径
+  val_file: null
+  seq_len: 4096
+  memmap: true
+
+training:
+  output_dir: outputs/pretrain_8b
+  seed: 42
+  per_device_train_batch_size: 4           # MBS=4；seq_len=4096 时单卡约 65K tokens
+  gradient_accumulation_steps: 16          # GAS=16；GLOBAL_BS = 4*16*8 = 512 sequences
+  max_steps: 100000                       # 真机按 token 总量反推
+  num_train_epochs: 1.0
+  learning_rate: 3.0e-4                   # 8B 预训练峰值 lr
+  weight_decay: 0.1
+  adam_betas: [0.9, 0.95]
+  adam_eps: 1.0e-8
+  max_grad_norm: 1.0
+  optimizer_type: adamw                   # 显存吃紧可换 paged_adamw_8bit
+  warmup_steps: 2000
+  min_lr_ratio: 0.1                      # 末端 lr = 3e-5
+  mixed_precision: bf16
+  gradient_checkpointing: true            # 8B + 4K 序列必须开
+  torch_compile: true
+  logging_steps: 10
+  save_steps: 1000
+  eval_steps: 1000
+  save_total_limit: 5
+  report_to: wandb                        # 真机开 wandb；也可写 all
+  project_name: llama31-8b-scratch-pretrain
+  run_name: 8b-pretrain
+  dataloader_num_workers: 4
+
+distributed:
+  backend: deepspeed                      # 8B 用 ZeRO-2；70B 再上 ZeRO-3
+  deepspeed_config: configs/pretrain/ds_z2.json
+  fsdp_config: null
