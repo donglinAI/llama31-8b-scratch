@@ -1,0 +1,55 @@
+# ============================================================
+# SFT smoke 配置：CPU / 单卡快速跑通指令微调全链路
+# 硬件假设：任意笔记本 CPU 或单张消费级显卡
+# ============================================================
+_base_: ../../configs/model/smoke.yaml
+
+tokenizer:
+  path: outputs/tokenizer/smoke
+
+data:
+  train_file: data/toy/sft.jsonl
+  val_file: null
+  seq_len: 128
+  packing: false                # 短序列 smoke 不打包
+
+training:
+  output_dir: outputs/sft_smoke
+  seed: 42
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 2
+  max_steps: 30
+  num_train_epochs: 1.0
+  learning_rate: 1.0e-4         # SFT 峰值 lr 比预训练小一个量级
+  weight_decay: 0.0
+  adam_betas: [0.9, 0.95]
+  adam_eps: 1.0e-8
+  max_grad_norm: 1.0
+  optimizer_type: adamw
+  warmup_steps: 3
+  min_lr_ratio: 0.1
+  mixed_precision: no
+  gradient_checkpointing: false
+  torch_compile: false
+  logging_steps: 10
+  save_steps: 15
+  eval_steps: 100000
+  save_total_limit: 2
+  report_to: none
+  project_name: llama31-8b-scratch-sft
+  run_name: smoke
+  dataloader_num_workers: 0
+
+# LoRA 微调（smoke 用；peft 缺失时走 manual_freeze 分支，仅用于链路验证）
+peft:
+  use_peft: false
+  r: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  target_modules: ["q_proj", "v_proj"]
+  use_qlora: false
+
+distributed:
+  backend: null
+  deepspeed_config: null
+  fsdp_config: null

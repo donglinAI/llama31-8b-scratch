@@ -1,0 +1,53 @@
+# ============================================================
+# SFT 8B 真机配置：LoRA + QLoRA NF4 微调，单卡 24G 即可起步
+# 硬件假设：1~8×A100/H100；QLoRA 时单张 24G 4090 也能跑
+# ============================================================
+_base_: ../../configs/model/llama3.1_8b.yaml
+
+data:
+  train_file: data/toy/sft.jsonl
+  val_file: null
+  seq_len: 2048
+  packing: true                 # SFT 常用序列打包提高吞吐
+
+training:
+  output_dir: outputs/sft_8b
+  seed: 42
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 4
+  max_steps: 2000
+  num_train_epochs: 3.0
+  learning_rate: 2.0e-5         # LoRA 常用 1e-4 ~ 2e-5；全参 SFT 用 1e-5
+  weight_decay: 0.0
+  adam_betas: [0.9, 0.95]
+  adam_eps: 1.0e-8
+  max_grad_norm: 1.0
+  optimizer_type: adamw
+  warmup_steps: 100
+  min_lr_ratio: 0.1
+  mixed_precision: bf16
+  gradient_checkpointing: true
+  torch_compile: false          # LoRA + peft 下 compile 兼容性偶有问题
+  logging_steps: 10
+  save_steps: 200
+  eval_steps: 200
+  save_total_limit: 3
+  report_to: wandb
+  project_name: llama31-8b-scratch-sft
+  run_name: 8b-lora
+  dataloader_num_workers: 2
+
+peft:
+  use_peft: true
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+  use_qlora: true               # NF4 量化 base 模型
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_compute_dtype: bfloat16
+
+distributed:
+  backend: deepspeed
+  deepspeed_config: configs/pretrain/ds_z2.json
+  fsdp_config: null
