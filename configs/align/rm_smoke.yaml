@@ -1,0 +1,28 @@
+# ============================================================
+# 奖励模型（RM）CPU 冒烟配置：极小模型 + 合成/小样本偏好对
+# 用途：在 CPU 上分钟级跑通 pairwise 损失前向/反向，验证数据通路与形状
+# 默认硬件假设：单卡 CPU，batch_size=2，序列长度很短
+# ============================================================
+_base_: ../model/smoke.yaml
+
+seed: 42
+
+data:
+  train_path: data/toy/align/rm_train.jsonl   # schema: prompt/chosen/rejected
+  eval_path: null
+
+align:
+  method: rm
+  margin: 0.0                # 成对间隔 m，要求 r_w - r_l >= m
+
+trainer:
+  output_dir: outputs/align/rm_smoke
+  learning_rate: 1.0e-5
+  batch_size: 2
+  max_steps: 5
+  num_train_epochs: 1
+  gradient_accumulation_steps: 1
+  logging_steps: 1
+  save_steps: 5
+  weight_decay: 0.0
+  max_length: 64
