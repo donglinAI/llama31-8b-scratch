@@ -1,0 +1,25 @@
+# ============================================================
+# SentencePiece BPE 训练配置（可选后端，需先安装 sentencepiece）
+# 用途：复现 Llama 系列原生分词方案；未安装时本配置不可执行
+# 默认硬件假设：CPU 可训练 toy 语料；真机语料建议多线程
+# ============================================================
+
+backend: sentencepiece
+
+train:
+  input_path: data/toy/pretrain.txt   # SP 要求纯文本（每行一条）
+  model_prefix: outputs/tokenizer/spm/spm
+  vocab_size: 1000
+  model_type: bpe                     # bpe | unigram | char | word
+  character_coverage: 0.9995         # 中文语料覆盖率建议 ≥ 0.9995
+  num_threads: 4
+
+special_tokens:
+  - "<|begin_of_text|>"
+  - "<|end_of_text|>"
+  - "<|eot_id|>"
+  - "<|finetune_right_pad_token|>"
+  - "<|start_header_id|>"
+  - "<|end_header_id|>"
+
+output_dir: outputs/tokenizer/spm

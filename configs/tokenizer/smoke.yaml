@@ -1,0 +1,15 @@
+# ============================================================
+# 冒烟专用分词器：词表规模 512，与 configs/model/smoke.yaml 的
+# vocab_size=512 严格对齐，保证编码出的 token id 都落在模型词表内
+# ============================================================
+_base_: bpe_tokenizers.yaml
+
+train:
+  corpus_files:
+    - data/toy/pretrain.jsonl
+  vocab_size: 512
+  min_frequency: 1
+  max_token_length: 20
+  show_progress: false
+
+output_dir: outputs/tokenizer/smoke

@@ -1,0 +1,31 @@
+# ============================================================
+# BPE 分词器训练配置（默认后端：tokenizers Rust BPE，CPU 可跑）
+# 用途：在自有语料上训练子词分词器，产出 tokenizer.json 与特殊 token 映射
+# 默认硬件假设：CPU / 单卡均可；smoke 用 toy 语料，真机替换 corpus_files 即可
+# ============================================================
+
+# 后端选择：tokenizers（默认，最小依赖可跑）| sentencepiece | tiktoken
+# 后两者未安装时仅对应路径不可用，不影响 tokenizers 路径
+backend: tokenizers
+
+train:
+  # 训练语料：jsonl（读取 text 字段）或纯文本文件，可列多个
+  corpus_files:
+    - data/toy/pretrain.jsonl
+  vocab_size: 1000            # smoke 词表规模；真机建议 32000~128256
+  min_frequency: 1            # 子词对进入合并表的最低词频
+  max_token_length: 20        # 单个 token 最大字符长度
+  show_progress: false
+
+# 注册的特殊 token（顺序即低位 id 分配顺序），与 Llama 3.1 模板一致
+special_tokens:
+  - "<unk>"
+  - "<|begin_of_text|>"
+  - "<|end_of_text|>"
+  - "<|eot_id|>"
+  - "<|finetune_right_pad_token|>"
+  - "<|start_header_id|>"
+  - "<|end_header_id|>"
+
+# 模型产物输出目录（相对项目根目录）
+output_dir: outputs/tokenizer/bpe

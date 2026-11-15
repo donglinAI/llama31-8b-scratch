@@ -1,0 +1,21 @@
+# ============================================================
+# 词表扩充配置：在已训练分词器基础上追加领域 token，并扩展 embedding
+# 用途：不重训 BPE，为新增特殊 token / 领域术语分配新 id，同步扩大嵌入矩阵
+# 默认硬件假设：CPU 可完成 numpy 侧扩展；torch 侧扩展见 tokenizer_extend 模块
+# ============================================================
+
+# 已保存的基座分词器目录（含 tokenizer.json）
+base_tokenizer_dir: outputs/tokenizer/bpe
+
+# 待追加的新 token（已存在于词表中的会自动跳过）
+new_tokens:
+  - "<|tool_call|>"
+  - "<|observation|>"
+  - "<|function_result|>"
+
+# 新增 embedding 行的初始化参数（与模型 initializer_range 对齐）
+initializer_range: 0.02
+seed: 42
+
+# 扩展产物输出目录
+output_dir: outputs/tokenizer/extended
