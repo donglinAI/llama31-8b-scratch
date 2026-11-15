@@ -1,0 +1,38 @@
+# ============================================================
+# Llama 3.1 8B 基座模型结构配置
+# 数值与 Meta 官方发布的 Llama 3.1 8B 完全一致
+# 论文：Llama 3.1 Herd of Models (2024)
+# ============================================================
+model:
+  arch: "scratch"            # 走 llama31_8b_scratch 手写模型实现
+  vocab_size: 128256       # Llama 3 词表规模
+  hidden_size: 4096
+  intermediate_size: 14336
+  num_hidden_layers: 32
+  num_attention_heads: 32
+  num_key_value_heads: 8   # GQA：32 个 Q 头共享 8 组 KV 头，每组 4 个 Q 头
+  head_dim: 128
+  max_position_embeddings: 131072
+  rope_theta: 500000.0     # Llama 3 把 RoPE 基频从 10000 提高到 500000
+  rms_norm_eps: 1.0e-5
+  hidden_act: "silu"       # SwiGLU 激活
+  attention_bias: false
+  attention_dropout: 0.0
+  tie_word_embeddings: false
+  initializer_range: 0.02
+  use_cache: true
+  # 长上下文 RoPE 缩放，默认关闭；可选 linear / dynamic / yarn
+  rope_scaling: null
+  # rope_scaling:
+  #   type: "yarn"
+  #   factor: 8.0
+  #   original_max_position_embeddings: 8192
+
+# Llama 3 特殊 token id（官方 tokenizer 固定值）
+token:
+  bos_token_id: 128000     # <|begin_of_text|>
+  eos_token_id: 128001     # <|end_of_text|>
+  eot_token_id: 128009     # <|eot_id|>
+  pad_token_id: 128004     # <|finetune_right_pad_token|>
+  start_header_id: 128006  # <|start_header_id|>
+  end_header_id: 128007    # <|end_header_id|>

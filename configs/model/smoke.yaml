@@ -1,0 +1,31 @@
+# ============================================================
+# 冒烟测试用极小模型配置：CPU 即可在分钟级跑通全链路
+# 结构与 Llama 3.1 同构（RMSNorm + RoPE + GQA + SwiGLU），仅缩小尺寸
+# ============================================================
+model:
+  arch: "scratch"
+  vocab_size: 512
+  hidden_size: 128
+  intermediate_size: 384
+  num_hidden_layers: 2
+  num_attention_heads: 4
+  num_key_value_heads: 2
+  head_dim: 32
+  max_position_embeddings: 128
+  rope_theta: 10000.0
+  rms_norm_eps: 1.0e-5
+  hidden_act: "silu"
+  attention_bias: false
+  attention_dropout: 0.0
+  tie_word_embeddings: false
+  initializer_range: 0.02
+  use_cache: true
+  rope_scaling: null
+
+token:
+  bos_token_id: 1
+  eos_token_id: 2
+  eot_token_id: 3
+  pad_token_id: 0
+  start_header_id: 4
+  end_header_id: 5
