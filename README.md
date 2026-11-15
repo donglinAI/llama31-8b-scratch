@@ -146,4 +146,3 @@ llama31-8b-scratch/
 ## 许可证
 
 本项目基于 [Apache License 2.0](LICENSE) 发布。Llama 3.1 模型与词表的使用须同时遵守 Meta 官方许可协议。
-

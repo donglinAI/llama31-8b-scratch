@@ -1,0 +1,45 @@
+# ============================================================
+# llama31-8b-scratch 核心依赖（最小集合，手写教学链路只需要这些）
+# 全部训练/推理代码均对可选依赖做惰性导入，缺失时仅对应功能不可用
+# ============================================================
+torch>=2.2
+numpy>=1.24
+PyYAML>=6.0
+tqdm>=4.66
+safetensors>=0.4
+
+# ---------- 模型 / 分词 ----------
+transformers>=4.46
+tokenizers>=0.20
+sentencepiece>=0.2
+tiktoken>=0.7
+einops>=0.7
+
+# ---------- 训练 / 对齐 ----------
+datasets>=2.19
+accelerate>=0.30
+peft>=0.11
+trl>=0.9
+deepspeed>=0.14
+bitsandbytes>=0.43
+liger-kernel>=0.2
+wandb>=0.17
+tensorboard>=2.16
+
+# ---------- 量化 ----------
+auto-gptq>=0.7
+autoawq>=0.2
+optimum>=1.19
+
+# ---------- 评测 ----------
+lm-eval>=0.4.4
+evaluate>=0.4
+
+# ---------- 部署 / Demo ----------
+vllm>=0.5
+sglang>=0.3
+fastapi>=0.110
+uvicorn>=0.29
+gradio>=4.26
+openai>=1.30
+httpx>=0.27

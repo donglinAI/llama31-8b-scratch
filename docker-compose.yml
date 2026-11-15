@@ -1,0 +1,37 @@
+# ============================================================
+# llama31-8b-scratch 一键编排：API 服务 + Gradio 网页
+# 用法：docker compose up --build
+#   api  -> http://127.0.0.1:8000  (OpenAI 兼容)
+#   web  -> http://127.0.0.1:7860  (Gradio 对话)
+# GPU 真机：给 api 加 deploy.resources / runtime=nvidia，并挂载权重目录
+# ============================================================
+services:
+  api:
+    build: .
+    container_name: llama31_8b_scratch_api
+    command: >
+      python 08_deploy/run_api.py --config configs/deploy/api.yaml
+      --override server.host=0.0.0.0
+      --override model.model_path=
+    environment:
+      - PYTHONPATH=/workspace/src
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  web:
+    build: .
+    container_name: llama31_8b_scratch_web
+    # 先在镜像里装 gradio；真实部署建议把 gradio 写进单独的依赖文件
+    command: >
+      sh -c "pip install gradio>=4.26 &&
+             python 09_demo/gradio_app.py --config configs/deploy/gradio.yaml
+             --override gradio.api_url=http://api:8000
+             --override gradio.host=0.0.0.0"
+    environment:
+      - PYTHONPATH=/workspace/src
+    ports:
+      - "7860:7860"
+    depends_on:
+      - api
+    restart: unless-stopped
