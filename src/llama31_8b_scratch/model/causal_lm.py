@@ -1,23 +1,23 @@
-r"""因果语言模型封装（ScratchForCausalLM）手写实现。
+r"""因果语言模型封装 ScratchForCausalLM 手写实现。
 
-在 :class:`ScratchModel` 顶部接一个词表投影头，输出下一个词元的 logits；
-损失在模块内部完成标签移位（与 SPEC 5.5 口径一致）：
+在 ScratchModel 顶部接一个词表投影头，输出下一个词元的 logits;
+损失在模块内部完成标签移位：
 
 .. math::
+    \mathcal{L} = -\sum_{t=1}^{T-1}
+        \log P(y_{t+1} \mid y_{\le t}; \theta)
 
-    \\mathcal{L} = -\\sum_{t=1}^{T-1}
-        \\log P(y_{t+1} \\mid y_{\\le t}; \\theta)
-
-即 ``cross_entropy(logits[..., :-1, :], labels[..., 1:])``，
-``ignore_index=-100`` 的位置不计入损失。
+即 cross_entropy(logits[..., :-1, :], labels[..., 1:]),
+ignore_index=-100 的位置不计入损失。
 
 权重落盘兼容
 ------------
-``save_pretrained`` 同时写出：
-- ``model.safetensors``：state_dict 键名与 HF Llama 逐字一致；
-- ``config.json``：``model_type="llama"``，可被 transformers / vLLM / SGLang
+save_pretrained 同时写出：
+- model.safetensors: state_dict 键名与 HF Llama 逐字一致；
+- config.json: model_type="llama"，可被 transformers / vLLM / SGLang
   按原生 Llama 结构加载，无需注册自定义模型。
 """
+
 
 from __future__ import annotations
 
@@ -46,18 +46,18 @@ class CausalLMOutput:
     past_key_values: Optional[Any] = None
 
 
-class ScratchForCausalLM(nn.Module):
+class ScratchForCausalLM(nn.Module): # 完整因果语言模型封装（Decoder 主干 + LM 输出头），对应 HF 风格 LlamaForCausalLM
     """解码器 + 词表投影头，支持权重落盘与回填。"""
 
     def __init__(self, config: ModelConfig) -> None:
         super().__init__()
         self.config = config
-        self.model = ScratchModel(config)
+        self.model = ScratchModel(config) # Decoder 主干
         self.vocab_size = config.vocab_size
 
-        if config.tie_word_embeddings:
+        if config.tie_word_embeddings: 
             # 绑定嵌入与输出头：不单独持有 lm_head 参数，复用 embed_tokens.weight
-            self.lm_head: Optional[nn.Linear] = None
+            self.lm_head: Optional[nn.Linear] = None # LM 输出头
         else:
             self.lm_head = nn.Linear(
                 config.hidden_size, config.vocab_size, bias=False
@@ -89,10 +89,10 @@ class ScratchForCausalLM(nn.Module):
         """前向传播，返回 logits 与可选损失。
 
         Args:
-            input_ids: ``[B, T]`` 词元下标。
-            labels: ``[B, T]`` 标签，与输入等长；移位在内部完成。
-            attention_mask: padding 掩码，``[B, T]``。
-            position_ids: 位置编号，``[B, T]``。
+            input_ids: [B, T] 词元下标。
+            labels: [B, T] 标签，与输入等长；移位在内部完成。
+            attention_mask: padding 掩码，[B, T]。
+            position_ids: 位置编号，[B, T]。
             past_key_values: KV 缓存。
             use_cache: 是否更新缓存。
             gradient_checkpointing: 训练梯度检查点开关。

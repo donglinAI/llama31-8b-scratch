@@ -1,11 +1,11 @@
-"""词元嵌入层（token embedding）手写实现。
+"""词元嵌入层 token embedding 手写实现。
 
 形状约定
 --------
-- 输入 ``input_ids``: ``[batch, seq_len]``，元素为词表下标；
-- 输出 ``[batch, seq_len, hidden_size]``；
-- 参数 ``weight``: ``[vocab_size, hidden_size]``，键名路径为
-  ``model.embed_tokens.weight``（与 HF Llama 逐字一致）。
+- 输入 input_ids: [batch, seq_len]，元素为词表下标；
+- 输出 [batch, seq_len, hidden_size];
+- 参数 weight: [vocab_size, hidden_size]，键名路径为
+  model.embed_tokens.weight （与 HF Llama 逐字一致）。
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from torch import nn
 
 
 class ScratchEmbedding(nn.Module):
-    """可学习词元嵌入矩阵，初始化遵循配置中的 ``initializer_range``。"""
+    """可学习词元嵌入矩阵，初始化遵循配置中的 initializer_range。"""
 
     def __init__(
         self,

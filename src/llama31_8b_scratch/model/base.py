@@ -1,14 +1,14 @@
-"""解码器骨干模型（ScratchModel）手写实现。
+"""解码器骨干模型 ScratchModel 手写实现。
 
 职责
 ----
 - 词元嵌入查表；
-- 逐层堆叠 :class:`ScratchDecoderLayer`；
-- 最终 RMSNorm；
-- 构造因果加性 mask（同时支持 padding mask 与 KV Cache 解码步）。
+- 逐层堆叠 :class: ScratchDecoderLayer;
+- 最终 RMSNorm;
+- 构造因果加性 mask, 同时支持 padding mask 与 KV Cache 解码步;
 
-state_dict 顶层键路径约定：``model.embed_tokens.weight``、
-``model.layers.{i}.*``、``model.norm.weight``，与 HF Llama 对齐。
+state_dict 顶层键路径约定： model.embed_tokens.weight、
+model.layers.{i}.*、model.norm.weight, 与 HF Llama 对齐。
 """
 
 from __future__ import annotations
@@ -29,16 +29,16 @@ from llama31_8b_scratch.model.norm import ScratchRMSNorm
 class BaseModelOutput:
     """骨干前向输出的轻量容器，避免依赖 transformers 的输出类。"""
 
-    last_hidden_state: torch.Tensor
-    past_key_values: Optional[Any] = None
-    hidden_states: Optional[Tuple[torch.Tensor, ...]] = None
+    last_hidden_state: torch.Tensor # Decoder 最后一层的输出特征
+    past_key_values: Optional[Any] = None # KV 缓存，推理时用；训练阶段一般传 None 
+    hidden_states: Optional[Tuple[torch.Tensor, ...]] = None # 全部层的中间隐状态（可视化、蒸馏、分析）的时候才填充，正常训练推理可不传
 
 
 class ScratchModel(nn.Module):
-    """纯 ``nn.Module`` 解码器骨干，不继承任何 HF 预训练模型类。"""
+    """纯 nn.Module 解码器骨干，不继承任何 HF 预训练模型类。"""
 
     def __init__(self, config: ModelConfig) -> None:
-        super().__init__()
+        super().__init__() 
         self.config = config
         self.embed_tokens = ScratchEmbedding(
             vocab_size=config.vocab_size,
@@ -47,17 +47,17 @@ class ScratchModel(nn.Module):
         )
         self.layers = nn.ModuleList(
             [ScratchDecoderLayer(config, layer_idx=i) for i in range(config.num_hidden_layers)]
-        )
-        self.norm = ScratchRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        ) # ModuleList 只是容器，不会自动串联；forward 里要写循环依次过每一层
+        self.norm = ScratchRMSNorm(config.hidden_size, eps=config.rms_norm_eps) # Decoder计算完后，进入 lm_head 之前的一次 全局 RMSNorm
 
         # 权重初始化（Llama 口径：线性层 normal_(std=initializer_range)）
-        self.apply(self._init_weights)
+        self.apply(self._init_weights) # 遍历模型的所有子模块，逐个执行 _init_weights 函数
 
     # ------------------------------------------------------------------
     # 初始化
     # ------------------------------------------------------------------
     def _init_weights(self, module: nn.Module) -> None:
-        """按配置的 ``initializer_range`` 初始化线性层与嵌入层。"""
+        """按配置的 initializer_range 初始化线性层与嵌入层。"""
         std = self.config.initializer_range
         if isinstance(module, nn.Linear):
             nn.init.normal_(module.weight, mean=0.0, std=std)
@@ -75,13 +75,14 @@ class ScratchModel(nn.Module):
         input_ids: torch.Tensor,
         past_key_values: Optional[Any],
     ) -> Optional[torch.Tensor]:
-        """构造加性因果 mask，形状 ``[B, 1, Tq, Tk]``，屏蔽位置填 ``-inf``。
+        """构造加性因果 mask, 形状 [B, 1, Tq, Tk]，屏蔽位置填 -inf 
 
         Args:
-            attention_mask: ``[B, T]``，1 表示有效 token、0 表示 padding；可空。
-            input_ids: 当前步输入，``[B, Tq]``。
-            past_key_values: KV 缓存，用于推算历史键长度 ``past_len``。
+            attention_mask: [B, T], 1 表示有效 token、0 表示 padding; 可空。
+            input_ids: 当前步输入，[B, Tq]。
+            past_key_values: KV 缓存，用于推算历史键长度 past_len
         """
+
         bsz, q_len = input_ids.shape
         past_len = 0
         if past_key_values is not None and hasattr(past_key_values, "get_seq_length"):

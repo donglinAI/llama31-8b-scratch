@@ -58,7 +58,7 @@ class ModelConfig: # 模型超参数类
     # ------------------------------------------------------------------
     @classmethod
     def from_yaml_config(cls, cfg: Config) -> "ModelConfig":
-        """从公共配置对象构建 ModelConfig ; 
+        """从公共配置对象构建 ModelConfig ; 做强制类型转换、特殊 token 提取、兜底兼容等
 
         Args:
             cfg: llama31_8b_scratch.common.config.Config

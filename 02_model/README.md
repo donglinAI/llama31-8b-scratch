@@ -135,8 +135,8 @@ $$
 
 ```math
 \begin{aligned}
-\mathcal{L} &= -\sum_{t=1}^{T-1}\log P(y_{t+1}\mid y_{\le t}) \\
-&= -\Big[ \log P(y_{2}\mid y_1) +\log P(y_{3}\mid y_1,y_2) +\dots +\log P(y_{T}\mid y_1,\dots,y_{T-1}) \Big]
+\mathcal{L} &= -\sum_{t=1}^{T-1}\log P(y_{t+1}\mid y_{\le t};\theta) \\
+&= -\Big[ \log P(y_{2}\mid y_1;\theta) +\log P(y_{3}\mid y_1,y_2;\theta) +\dots +\log P(y_{T}\mid y_1,\dots,y_{T-1};\theta) \Big]
 \end{aligned}
 ```
 
