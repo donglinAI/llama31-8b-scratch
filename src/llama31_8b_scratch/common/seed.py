@@ -16,20 +16,20 @@ def set_seed(seed: int = 42, deterministic: bool = False) -> None:
         seed: 种子值。
         deterministic: 为 True 时开启 CUDA 确定性算法，牺牲性能换取可复现。
     """
-    os.environ["PYTHONHASHSEED"] = str(seed)
-    random.seed(seed)
-    np.random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed) # Python内置哈希（字典、set等）受该变量控制
+    random.seed(seed) # Python标准库 random 的随机种子，对应 random.random() random.shuffle() 等原生随机函数
+    np.random.seed(seed) # 设置 numpy 的随机种子，控制 np.random 系列随机采样
 
-    import torch
+    import torch # 延迟导入 torch 
 
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-    if deterministic:
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed) # 控制CPU上 torch 的随机种子
+    if torch.cuda.is_available(): # 设备是否有GPU；GPU是硬件，CUDA是调用GPU的软件接口，通过CUDA软件编程可调用硬件GPU
+        torch.cuda.manual_seed_all(seed) # 设置所有GPU上的随机种子，单卡、多卡都覆盖；torch.cuda.manual_seed(42) 设置当前卡随机种子
+    if deterministic: # cudnn是在CUDA里 卷积等计算算法，transformer架构少用，多在CNN作用较大
+        torch.backends.cudnn.deterministic = True # 使用确定性算法
+        torch.backends.cudnn.benchmark = False # 使用默认算法，不必测速选最快算法
         # 见 PyTorch 文档：use_deterministic_algorithms 会让无确定性实现的算子直接报错
-        torch.use_deterministic_algorithms(True, warn_only=True)
+        torch.use_deterministic_algorithms(True, warn_only=True) # 只使用确定性算法
 
 
 def get_rng_state() -> Optional[dict]:

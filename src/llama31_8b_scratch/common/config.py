@@ -1,13 +1,13 @@
 """YAML 配置加载器。
 
 设计目标：
-1. 仅依赖 PyYAML，不引入 omegaconf/hydra 等重型配置框架；
-2. 支持点号属性访问（``cfg.model.hidden_size``）与字典访问两种方式；
-3. 支持 ``_base_`` 关键字实现配置继承（相对路径或路径列表，可多层嵌套），
+1. 仅依赖 PyYAML, 不引入 omegaconf/hydra 等重型配置框架；
+2. 支持点号属性访问（ cfg.model.hidden_size ）与字典访问两种方式；
+3. 支持 _base_ 关键字实现配置继承（相对路径或路径列表，可多层嵌套），
    子配置覆盖父配置，字典做深度合并；
-4. 支持命令行 ``key.subkey=value`` 形式的覆盖项。
+4. 支持命令行 key.subkey=value 形式的覆盖项。
 
-该模块是纯标准库 + PyYAML 实现，可在无 GPU、无 torch 环境直接单测。
+
 """
 
 from __future__ import annotations
@@ -20,30 +20,30 @@ import yaml
 
 
 class ConfigError(ValueError):
-    """配置文件解析或合并阶段的异常。"""
+    """配置文件解析或合并阶段的异常。""" # 只有文档字符串，可以区分报错类型（例如 配置文件报错）；继承ValueError，复写 __doc__属性；给后续留接口
 
 
-def deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
-    """把 ``override`` 深度合并进 ``base``，返回新的字典。
+def deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]: # base override return 都是字典类型
+    """把 override 深度合并进 base, 返回新的字典。override 优先级更高。不修改base内容。
 
     规则：
     - 两边同名字段都是 dict 时递归合并；
     - 其余情况以 override 的值为准（列表整体替换，不做元素级拼接）。
     """
-    result = copy.deepcopy(base)
+    result = copy.deepcopy(base) # 深 copy；修改base后 不影响result结果
     for key, value in override.items():
         if (
             key in result
             and isinstance(result[key], dict)
             and isinstance(value, dict)
-        ):
+        ): # 有共同key，且base的value值和override的value值都是字典类型；
             result[key] = deep_merge(result[key], value)
         else:
-            result[key] = copy.deepcopy(value)
+            result[key] = copy.deepcopy(value) # override 的 value 覆盖 base 的值；
     return result
 
 
-def _parse_scalar(text: str) -> Any:
+def _parse_scalar(text: str) -> Any: # 输入是字符串 输出是任何内容；
     """把命令行传入的字符串标量解析成 Python 类型。"""
     try:
         return yaml.safe_load(text)
@@ -53,24 +53,24 @@ def _parse_scalar(text: str) -> Any:
 
 class Config:
     """支持属性访问的配置对象。"""
-
-    def __init__(self, data: Optional[Dict[str, Any]] = None) -> None:
-        if data is not None and not isinstance(data, dict):
+    # 初始化Config时 传入data，自动调用__init__ 方法
+    def __init__(self, data: Optional[Dict[str, Any]] = None) -> None: # 输入是字典或者空；不返回值，只初始化实例
+        if data is not None and not isinstance(data, dict): #  不为空的时候必须是字典类型；或者 data 为空
             raise ConfigError(f"配置根节点必须是字典，实际为 {type(data)!r}")
-        self._data: Dict[str, Any] = data or {}
+        self._data: Dict[str, Any] = data or {} # self._data 是内部变量；实例不直接调用该属性，由于是直接赋值，所以它和外部data引用相同；但 {} 是新对象
 
     # ---------- 构造 ----------
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Config":
+    def from_dict(cls, data: Dict[str, Any]) -> "Config": # 这种写法，对继承Config的子类有好处；初始化类，并用深copy的data值；
         return cls(copy.deepcopy(data))
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "Config":
-        path = Path(path).resolve()
+        path = Path(path).resolve() # 转绝对路径
         if not path.is_file():
             raise ConfigError(f"配置文件不存在: {path}")
-        with path.open("r", encoding="utf-8") as handle:
-            raw = yaml.safe_load(handle)
+        with path.open("r", encoding="utf-8") as fp:
+            raw = yaml.safe_load(fp) # 文件对象fp直接使用即可，不需要fp.read()等；读取文件内容 变成 字典
         if raw is None:
             raw = {}
         if not isinstance(raw, dict):
@@ -97,16 +97,16 @@ class Config:
 
         merged: Dict[str, Any] = {}
         for base_ref in base_paths:
-            base_file = (current_path.parent / base_ref).resolve()
+            base_file = (current_path.parent / base_ref).resolve() # _base_ 的相对路径是相对当前这个yaml所在目录
             base_config = cls.from_yaml(base_file)
             merged = deep_merge(merged, base_config.to_dict())
         return deep_merge(merged, raw)
 
     # ---------- 访问 ----------
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]: # 把整个配置导出成普通字典，注意是 deepcopy 
         return copy.deepcopy(self._data)
 
-    def get(self, dotted_key: str, default: Any = None) -> Any:
+    def get(self, dotted_key: str, default: Any = None) -> Any: # 支持 cfg.vocab_size 和 cfg.model.hidden_size 形式
         node: Any = self._data
         for part in dotted_key.split("."):
             if not isinstance(node, dict) or part not in node:

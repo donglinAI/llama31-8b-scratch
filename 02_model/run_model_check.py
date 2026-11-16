@@ -27,21 +27,21 @@ from llama31_8b_scratch.model.config import ModelConfig
 
 
 def parse_args() -> argparse.Namespace:
-    """解析命令行参数：``--config`` 必填，``--override`` 可重复。"""
+    """解析命令行参数：--config 必填，--override 可重复 """
     parser = argparse.ArgumentParser(
         description="手写 Transformer 模型自检：前向、落盘、回填、生成"
-    )
-    parser.add_argument("--config", required=True, help="模型 YAML 配置路径")
+    ) # 创建一个参数解析器实例 parser; 运行 python run_model_check.py -h 会显示出 description的内容
+    parser.add_argument("--config", required=True, help="模型 YAML 配置路径") # 必选参数，不赋值 --config 会报错
     parser.add_argument(
         "--override",
         action="append",
         default=None,
         help="点号路径覆盖项，形如 model.hidden_size=64，可重复传入",
-    )
+    ) # 默认[], 命令行参数可以多次赋值，会集合到list中；
     parser.add_argument(
         "--max-new-tokens", type=int, default=8, help="自检生成的最大新 token 数"
-    )
-    return parser.parse_args()
+    ) # 整数类型，非整数会报错; 默认值为8
+    return parser.parse_args() # 把所有参数打包，变成Namespace对象返回
 
 
 def main() -> None:

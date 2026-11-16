@@ -14,7 +14,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# 零安装 shim：把 src 目录注入 sys.path（SPEC 3）
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import argparse  # noqa: E402

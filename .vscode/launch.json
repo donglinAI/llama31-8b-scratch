@@ -1,0 +1,88 @@
+{
+  // 用法：VSCode Remote-SSH 连上 AutoDL 后，打开本仓库根目录，
+  // 先 Ctrl+Shift+P -> Python: Select Interpreter 选中 conda 环境，
+  // 再按 F5 选择对应配置即可打断点调试。
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug 训练分词器 (tokenizer)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/01_tokenizer/run_train_tokenizer.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--config",
+        "configs/tokenizer/bpe_tokenizers.yaml"
+      ],
+      "justMyCode": true
+    },
+    {
+      "name": "Debug 模型结构自检 (model check)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/02_model/run_model_check.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--config",
+        "configs/model/llama3.1_8b.yaml"
+      ],
+      "justMyCode": true
+    },
+    {
+      "name": "Debug 预训练 (pretrain)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/03_pretrain/run_pretrain.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--config",
+        "configs/pretrain/8b.yaml"
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "Debug 指令微调 (SFT)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/04_sft/run_sft.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--config",
+        "configs/sft/8b.yaml"
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "Debug DPO 对齐 (align)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/05_align/run_dpo.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--config",
+        "configs/align/dpo_8b.yaml"
+      ],
+      "justMyCode": false
+    }
+  ]
+}

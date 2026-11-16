@@ -1,11 +1,10 @@
 """模型配置数据类。
 
-本模块只负责把 YAML 中的 ``model`` / ``token`` 节点翻译成强类型的
-:class:`ModelConfig`，不实例化任何 ``nn.Module``。
+本模块只负责把 YAML 中的 model / token 节点翻译成强类型的
+:class:ModelConfig, 不实例化任何 nn.Module。
 
-字段清单与 SPEC 5.1 严格一致；``to_hf_dict`` 产出的字典可直接写成
-标准 HuggingFace ``config.json``（``model_type="llama"``），供
-transformers / vLLM / SGLang 以原生 Llama 结构加载，无需注册自定义模型。
+to_hf_dict 产出的字典可直接写成标准 HuggingFace config.json (model_type="llama"), 
+供 transformers / vLLM / SGLang 以原生 Llama 结构加载，无需注册自定义模型。
 """
 
 from __future__ import annotations
@@ -20,16 +19,16 @@ from llama31_8b_scratch.common.config import Config
 _SUPPORTED_ACTS = ("silu", "gelu", "gelu_pytorch_tanh")
 
 
-@dataclass
-class ModelConfig:
+@dataclass # 自动生成 __init__ __repr__ 等方法, 省去大量赋值代码
+class ModelConfig: # 模型超参数类
     """手写 Transformer 的超参数配置。
 
-    属性与 ``configs/model/*.yaml`` 的 ``model`` 节点一一对应；``token_ids``
-    是从 ``token`` 节点取出的特殊 token id 字典，供生成与对齐逻辑使用，
+    属性与 configs/model/*.yaml 的 model 节点一一对应; token_ids
+    是从 token 节点取出的特殊 token id 字典，供生成与对齐逻辑使用，
     不属于模型结构超参数。
     """
 
-    # ---- 结构超参数（SPEC 5.1，字段名不得改动） ----
+    # ---- 结构超参数（字段名不得改动） ----
     arch: str
     vocab_size: int
     hidden_size: int
@@ -44,27 +43,28 @@ class ModelConfig:
     hidden_act: str
     attention_bias: bool
     attention_dropout: float
-    tie_word_embeddings: bool
+    tie_word_embeddings: bool # 是否共享输入 embedding 和 输出 lm_head 权重；
     initializer_range: float
-    use_cache: bool
-    rope_scaling: Optional[Dict[str, Any]] = field(default=None)
+    use_cache: bool # 是否开启 KV 缓存，训练阶段关闭，推理阶段开启，加速自回归
+    rope_scaling: Optional[Dict[str, Any]] = field(default=None) # RoPE缩放配置
     # 注意力实现选择：eager / sdpa / flash_attention_2（可选，默认 sdpa）
     attention_impl: str = "sdpa"
 
     # ---- 特殊 token id（来自 YAML 的 token 节点） ----
-    token_ids: Dict[str, int] = field(default_factory=dict)
+    token_ids: Dict[str, int] = field(default_factory=dict) # 必须用 default_factory=dict 不能用 {}, 需要单独生成一个全新空字典；否则会让不同实例共享字段
 
     # ------------------------------------------------------------------
     # 构造与校验
     # ------------------------------------------------------------------
     @classmethod
     def from_yaml_config(cls, cfg: Config) -> "ModelConfig":
-        """从公共配置对象构建 ``ModelConfig``。
+        """从公共配置对象构建 ModelConfig ; 
 
         Args:
-            cfg: :class:`llama31_8b_scratch.common.config.Config`，根节点包含
-                ``model`` 与（可选）``token`` 两个字典节点。
+            cfg: llama31_8b_scratch.common.config.Config
+        
         """
+
         if "model" not in cfg:
             raise ValueError("配置中缺少 model 节点，无法构建 ModelConfig")
 

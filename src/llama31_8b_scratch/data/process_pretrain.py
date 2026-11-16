@@ -17,8 +17,8 @@ from llama31_8b_scratch.data import process_pretrain_core
 def read_jsonl(path: str | Path) -> List[Dict[str, Any]]:
     """逐行读取 UTF-8 jsonl，跳过空行；非法行抛出 ``ValueError``。"""
     records: List[Dict[str, Any]] = []
-    with Path(path).open("r", encoding="utf-8") as handle:
-        for line_no, line in enumerate(handle, start=1):
+    with Path(path).open("r", encoding="utf-8") as fp:
+        for line_no, line in enumerate(fp, start=1):
             line = line.strip()
             if not line:
                 continue
