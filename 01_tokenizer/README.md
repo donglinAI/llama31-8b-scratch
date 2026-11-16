@@ -67,12 +67,12 @@ $$
 
 | 特殊 token | id | 含义 |
 |---|---:|---|
-| `<|begin_of_text|>` | 128000 | 序列起始 BOS |
-| `<|end_of_text|>` | 128001 | 自然结束 EOS |
-| `<|eot_id|>` | 128009 | 单轮结束 EOT |
-| `<|finetune_right_pad_token|>` | 128004 | 右填充 PAD |
-| `<|start_header_id|>` | 128006 | 角色头起始 |
-| `<|end_header_id|>` | 128007 | 角色头结束 |
+| `<\|begin_of_text\|>` | 128000 | 序列起始 BOS |
+| `<\|end_of_text\|>` | 128001 | 自然结束 EOS |
+| `<\|eot_id\|>` | 128009 | 单轮结束 EOT |
+| `<\|finetune_right_pad_token\|>` | 128004 | 右填充 PAD |
+| `<\|start_header_id\|>` | 128006 | 角色头起始 |
+| `<\|end_header_id\|>` | 128007 | 角色头结束 |
 
 ### 2.4 SFT 的 prompt 掩码
 
@@ -93,15 +93,15 @@ $$
 
 ### 2.5 词表扩充与 embedding 扩展
 
-旧 embedding 形状 $W_{\text{old}} \in \mathbb{R}^{V_{\text{old}} \times D}$。
+旧 embedding 形状 $W_{\text{old}} \in \mathbb{R}^{V_{\text{old}} \times D}$ 。
 新增 $n$ 个 token 时，旧行原样保留，新行按截断正态初始化：
 
-$$
+```math
 w_{\text{new}} \sim \mathcal{N}(0, \sigma^2), \quad \sigma = \text{initializer\_range},
 \quad \text{截断区间 } [-2\sigma, 2\sigma]
-$$
+```
 
-扩展后 $W_{\text{new}} \in \mathbb{R}^{(V_{\text{old}}+n) \times D}$，旧 id 索引
+扩展后 $W_{\text{new}} \in \mathbb{R}^{(V_{\text{old}}+n) \times D}$ ，旧 id 索引
 不变，已有权重可继续加载。
 
 ## 3. 关键代码精读
