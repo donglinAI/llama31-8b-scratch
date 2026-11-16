@@ -61,14 +61,12 @@ $$
 
 位置 $t$ 的相位为 $t\omega_i$。RoPE 把成对维度 $(x_{2i}, x_{2i+1})$ 当作二维向量在其平面上旋转：
 
-$$
-\begin{pmatrix} x'_{2i} \\ x'_{2i+1} \end{pmatrix}
-=
-\begin{pmatrix} \cos(t\omega_i) & -\sin(t\omega_i) \\ \sin(t\omega_i) & \cos(t\omega_i) \end{pmatrix}
+```math
+\begin{pmatrix} x'_{2i} \\ x'_{2i+1} \end{pmatrix}=\begin{pmatrix} \cos(t\omega_i) & -\sin(t\omega_i) \\ \sin(t\omega_i) & \cos(t\omega_i) \end{pmatrix}
 \begin{pmatrix} x_{2i} \\ x_{2i+1} \end{pmatrix}
-$$
+```
 
-等价的张量写法使用 `rotate_half`：把最后一维对半拆成 $x_1 = x_{:D/2}$、$x_2 = x_{D/2:}$，则
+等价的张量写法使用 `rotate_half`：把最后一维对半拆成 $x_1 = x_{:D/2}$ 、$x_2 = x_{D/2:}$ ，则
 
 $$
 \mathrm{rotate\_half}(x) = [ -x_2,\ x_1 ]
