@@ -1,0 +1,5 @@
+.venv/
+outputs/
+src/llama31_8b_scratch.egg-info/
+__pycache__/
+*.pyc
