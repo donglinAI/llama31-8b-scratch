@@ -19,7 +19,7 @@ llama31-8b-scratch 把依赖分成两层：
 ### 2.1 为什么要做依赖分层
 
 大模型项目的重依赖（如 vLLM、DeepSpeed、bitsandbytes）对 CUDA 版本、编译器和
-内核耦合很强，在 CPU 机器或新驱动环境里经常装不上。教学代码的首要目标是可读、
+内核耦合很强，在 CPU 机器或新驱动环境里经常装不上。理解代码的首要目标是可读、
 可跑，因此把「必须能导入」的核心逻辑与「规模化才需要」的库解耦：
 
 - 纯算法逻辑（模板渲染、清洗去重、量化数学、优势归一化）只依赖标准库 / numpy；
@@ -60,7 +60,7 @@ def load_with_datasets(path: str | Path, split: str | None = None):
     try:
         from datasets import load_dataset  # 函数内部惰性导入
     except ImportError as exc:
-        raise ImportError("未安装 datasets；标准 jsonl 流程请使用 read_jsonl") from exc
+        raise ImportError("未安装 datasets；标准 jsonl 流程请使用 read_jsonl") 
     return load_dataset("json", data_files=str(path), split=split or "train")
 ```
 
@@ -73,7 +73,7 @@ def load_with_datasets(path: str | Path, split: str | None = None):
 python3 -m venv .venv
 source .venv/bin/activate
 
-# 核心依赖（CPU 版 torch 示例；有 GPU 时按 PyTorch 官网选择 cu 构建）
+# 核心依赖
 pip install torch numpy PyYAML tqdm safetensors tokenizers
 
 # 环境自检
@@ -88,22 +88,41 @@ pip install -e .
 
 ### 4.3 真机 GPU 环境（8B 训练/推理）
 
-```bash
-# 先确认驱动与 CUDA 版本
-nvidia-smi
-
-# 按 PyTorch 官网指令安装对应 cu 构建的 torch，例如 cu121
-pip install torch --index-url https://download.pytorch.org/whl/cu121
-
-# 训练阶段再装训练重依赖
-pip install datasets accelerate peft trl deepspeed
-```
-
-### 4.4 运行项目单测（CPU）
+依赖分组已在 `pyproject.toml` 的 `[project.optional-dependencies]` 中定义，
+按阶段用 `pip install -e ".[组名]"` 按需安装，不必再手动逐个 `pip install`。
 
 ```bash
-PYTHONPATH=src python3 -m unittest discover -s tests -v
+# 1) 基础依赖（torch / numpy / PyYAML / tqdm / safetensors）
+pip install -e .
+
+# 2) 训练全套（预训练 / SFT / DPO / GRPO / LoRA / DeepSpeed）
+pip install -e ".[train]"
+
+# 3) 其余分组按需选择，用到哪个装哪个
+pip install -e ".[model]"    # 分词与模型基础：transformers / tokenizers / einops 等
+pip install -e ".[quant]"    # 量化：auto-gptq / autoawq / bitsandbytes / optimum
+pip install -e ".[deploy]"   # 推理部署：vLLM / SGLang / FastAPI / Gradio / openai
+pip install -e ".[eval]"     # 评测：lm-eval / evaluate
+pip install -e ".[dev]"      # 开发：pytest / pytest-cov / ruff
+
+# 多组叠加：例如训练 + 量化 + 部署
+pip install -e ".[train,quant,deploy]"
 ```
+分组与内容对照：
+
+| 分组 | 包含依赖 |
+| --- | --- |
+| 默认（无 extras） | torch、numpy、PyYAML、tqdm、safetensors |
+| `model` | transformers、tokenizers、sentencepiece、tiktoken、einops |
+| `train` | datasets、accelerate、peft、trl、deepspeed、bitsandbytes、liger-kernel、wandb、tensorboard |
+| `quant` | auto-gptq、autoawq、bitsandbytes、optimum |
+| `deploy` | vllm、sglang、fastapi、uvicorn、gradio、openai、httpx |
+| `eval` | lm-eval、evaluate |
+| `dev` | pytest、pytest-cov、ruff |
+
+> 提示：`deploy` / `quant` 体量大且对 CUDA 版本敏感，建议单独阶段安装；
+> 仅跑分词与模型自检时，装默认 + `model` 即可，无需拉取 vLLM、DeepSpeed。
+
 
 ## 5. 常见坑与排查
 
@@ -120,19 +139,15 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 3. **bitsandbytes / deepspeed 编译失败**
    - 现象：`pip install bitsandbytes` 报 C++ 编译错误，或 deepspeed 检查器报
      CUDA 编译器缺失。
-   - 排查：这两个是训练量化重依赖，CPU 教学链路不需要装；先确认是否真的要走
+   - 排查：这两个是训练量化重依赖，CPU 理解链路不需要装；先确认是否真的要走
      8bit/4bit 或 ZeRO 训练，再按其官方文档准备 CUDA 工具链，不要在干净环境里
      顺带安装。
 
 4. **`ModuleNotFoundError: No module named 'llama31_8b_scratch'`**
    - 现象：直接运行编号目录脚本时找不到包。
-   - 排查：脚本顶部三行 shim 会把 `src/` 注入 `sys.path`；若从其他目录调用，
+   - 排查：脚本顶部三行会把 `src/` 注入 `sys.path`；若从其他目录调用，
      先执行 `export PYTHONPATH=src`，或使用 `pip install -e .`。
 
-5. **版本冲突导致 numpy/torch ABI 报错**
-   - 现象：`numpy.ndarray is not a numpy array` 或 torch 扩展加载崩溃。
-   - 排查：保持 numpy 1.24+ 与 torch 官方配套范围；建议新建干净虚拟环境，
-     避免与系统全局包混装。
 
 ## 下一期
 
