@@ -66,7 +66,7 @@ $$
 \begin{pmatrix} x_{2i} \\ x_{2i+1} \end{pmatrix}
 ```
 
-等价的张量写法使用 `rotate_half`：把最后一维对半拆成 $x_1 = x_{:D/2}$ 、$x_2 = x_{D/2:}$ ，则
+等价的张量写法使用 `rotate_half`：把最后一维对半拆成 $x_1 = x_{:D/2}$, $x_2 = x_{D/2:}$，则
 
 $$
 \mathrm{rotate\_half}(x) = [ -x_2,\ x_1 ]
@@ -83,15 +83,15 @@ $$
 - **linear（线性插值）**：频率整体除以缩放因子 $s$，相当于把位置轴拉长 $s$ 倍：$\omega_i \leftarrow \omega_i / s$。
 - **dynamic（NTK-by-parts）**：提高 RoPE 基频，使高频维度（精确位置）基本不变、低频维度（粗粒度结构）被插值。等价实现：
 
-  $$
-  \omega_i' = \omega_i \cdot s^{\frac{2i}{D}}
-  $$
+```math
+\omega_i' = \omega_i \cdot s^{\frac{2i}{D}}
+```
 
 - **YaRN（Yet Another RoPE Extension）**：完整方法在 NTK 基础上引入「修正维度区间」与注意力幅度缩放（mscale）。先按旋转次数定位需要修正的低频/高频维度区间，在区间内做频率插值；再用
 
-  $$
-  \mathrm{mscale}(s) = 0.1 \cdot m \cdot \ln(s) + 1
-  $$
+```math
+\mathrm{mscale}(s) = 0.1 \cdot m \cdot \ln(s) + 1
+```
 
   对注意力 logits 做幅度补偿，缓解长上下文注意力分布被稀释。本项目代码侧 `yarn` 分支先回退基础 RoPE 并打印 warning，完整数值实现列入后续迭代（TBD）；`linear` 与 `dynamic` 已完整手写。
 
@@ -123,7 +123,7 @@ $$
 \mathrm{SwiGLU}(x) = W_{\mathrm{down}}\big(\sigma(W_{\mathrm{gate}} x) \odot W_{\mathrm{up}} x\big)
 $$
 
-其中 $\sigma$ 为 SiLU（Swish）：$\sigma(z) = z \cdot \mathrm{sigmoid}(z)$。三个投影分别为 `gate_proj`、`up_proj`、`down_proj`，无 bias。
+其中 $\sigma$ 为 SiLU（Swish）: $\sigma(z) = z \cdot \mathrm{sigmoid}(z)$ 。三个投影分别为 `gate_proj`、`up_proj`、`down_proj`，无 bias。
 
 ### 2.6 因果 mask 与标签移位损失
 
@@ -146,7 +146,7 @@ $$
 
 ### 2.8 解码采样策略
 
-- **Temperature**：$z_i' = z_i / T$。$T<1$ 分布更尖锐，$T>1$ 更平坦；$T=0$ 退化为贪心 argmax。
+- **Temperature**：$z_i' = z_i / T$ 。$T<1$ 分布更尖锐，$T>1$ 更平坦；$T=0$ 退化为贪心 argmax。
 - **Top-k**：只保留概率最高的 $k$ 个候选，其余 logits 置 $-\infty$。
 - **Top-p（核采样）**：按概率降序累计，只保留累计概率不超过 $p$ 的最小候选集合。
 - **重复惩罚**：对已出现 token 调整 logits，降低重复概率：
