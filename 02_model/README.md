@@ -133,9 +133,12 @@ $$
 
 训练损失在模型内部完成移位：用位置 $t$ 的 logits 预测位置 $t+1$ 的标签：
 
-$$
-\mathcal{L} = -\sum_{t=1}^{T-1} \log P(y_{t+1} \mid y_{\le t}; \theta)
-$$
+```math
+\begin{aligned}
+\mathcal{L} &= -\sum_{t=1}^{T-1}\log P(y_{t+1}\mid y_{\le t}) \\
+&= -\Big[ \log P(y_{2}\mid y_1) +\log P(y_{3}\mid y_1,y_2) +\dots +\log P(y_{T}\mid y_1,\dots,y_{T-1}) \Big]
+\end{aligned}
+```
 
 对应代码：`cross_entropy(logits[..., :-1, :], labels[..., 1:])`，`ignore_index=-100` 的位置不计损失。
 
